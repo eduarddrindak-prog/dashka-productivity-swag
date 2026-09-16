@@ -1,0 +1,54 @@
+.divider {
+  margin: 0;
+  border: 0;
+  background: none;
+  color: var(--divider-color);
+  flex-shrink: 0;
+}
+
+/* Orientation */
+.divider--horizontal {
+  width: 100%;
+  height: var(--divider-thickness);
+  border-top: var(--divider-thickness) solid var(--divider-color);
+}
+
+.divider--vertical {
+  width: var(--divider-thickness);
+  height: 100%;
+  border-left: var(--divider-thickness) solid var(--divider-color);
+}
+
+/* Variants */
+.divider--default {
+  border-color: var(--color-border);
+}
+
+.divider--subtle {
+  border-color: var(--color-border-subtle);
+}
+
+/* Spacing */
+.divider--sm {
+  margin: var(--space-4) 0;
+}
+
+.divider--md {
+  margin: var(--space-8) 0;
+}
+
+.divider--lg {
+  margin: var(--space-12) 0;
+}
+
+.divider--vertical.divider--sm {
+  margin: 0 var(--space-4);
+}
+
+.divider--vertical.divider--md {
+  margin: 0 var(--space-8);
+}
+
+.divider--vertical.divider--lg {
+  margin: 0 var(--space-12);
+}

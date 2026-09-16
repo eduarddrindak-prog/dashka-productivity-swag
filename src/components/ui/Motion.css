@@ -1,0 +1,269 @@
+.motion {
+  --motion-duration: var(--duration-base);
+  --motion-delay: 0ms;
+  --motion-easing: var(--ease-standard);
+  --motion-distance: var(--motion-distance-small);
+  --motion-scale: var(--motion-scale-hover);
+
+  transition-duration: var(--motion-duration);
+  transition-timing-function: var(--motion-easing);
+  transition-delay: var(--motion-delay);
+  transition-property: opacity, transform;
+}
+
+/* Fade */
+
+.motion--fade {
+  opacity: 0;
+  animation: motion-fade var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Fade up */
+
+.motion--fade-up {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  animation: motion-fade-up var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Fade down */
+
+.motion--fade-down {
+  opacity: 0;
+  transform: translate3d(0, -24px, 0);
+  animation: motion-fade-down var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Fade left */
+
+.motion--fade-left {
+  opacity: 0;
+  transform: translate3d(-30px, 0, 0);
+  animation: motion-fade-left var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Fade right */
+
+.motion--fade-right {
+  opacity: 0;
+  transform: translate3d(30px, 0, 0);
+  animation: motion-fade-right var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Scale */
+
+.motion--scale {
+  opacity: 0;
+  transform: scale(var(--motion-scale-enter));
+  animation: motion-scale var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Lift */
+
+.motion--lift {
+  transform: translate3d(0, 0, 0);
+  animation: motion-lift var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+.motion--lift:hover,
+.motion--lift:focus-visible {
+  transform: translate3d(
+    0,
+    calc(var(--motion-lift-distance) * -1),
+    0
+  ) scale(var(--motion-scale-hover));
+}
+
+/* Slide */
+
+.motion--slide {
+  opacity: 0;
+  transform: translate3d(var(--motion-distance-medium), 0, 0);
+  animation: motion-slide var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Expand */
+
+.motion--expand {
+  opacity: 0;
+  transform-origin: top center;
+  animation: motion-expand var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Collapse */
+
+.motion--collapse {
+  opacity: 1;
+  transform-origin: top center;
+  animation: motion-collapse var(--motion-duration) var(--motion-easing) forwards;
+  animation-delay: var(--motion-delay);
+}
+
+/* Reveal state */
+
+.motion--hidden {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.motion--visible {
+  animation-play-state: running;
+}
+
+/* Motion group */
+
+.motion-group {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .motion,
+  .motion--fade,
+  .motion--fade-up,
+  .motion--fade-down,
+  .motion--fade-left,
+  .motion--fade-right,
+  .motion--scale,
+  .motion--lift,
+  .motion--slide,
+  .motion--expand,
+  .motion--collapse {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+    transition-duration: 1ms;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Keyframes */
+
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes motion-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-fade-down {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -24px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-fade-left {
+  from {
+    opacity: 0;
+    transform: translate3d(-30px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-fade-right {
+  from {
+    opacity: 0;
+    transform: translate3d(30px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-scale {
+  from {
+    opacity: 0;
+    transform: scale(var(--motion-scale-enter));
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes motion-lift {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-distance-medium), 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-slide {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--motion-distance-medium), 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-expand {
+  from {
+    opacity: 0;
+    transform: scaleY(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes motion-collapse {
+  from {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scaleY(0.88);
+  }
+}

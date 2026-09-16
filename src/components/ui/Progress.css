@@ -1,0 +1,58 @@
+.progress {
+  display: block;
+  width: 100%;
+}
+
+.progress__track {
+  position: relative;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  background:
+    var(--color-surface-strong);
+
+  border: 1px solid
+    var(--color-border);
+
+  border-radius: var(--radius-full);
+}
+
+.progress__fill {
+  height: 100%;
+
+  min-width: 0;
+
+  border-radius: inherit;
+
+  background:
+    var(--color-accent);
+
+  transition:
+    width var(--duration-base)
+      var(--ease-standard);
+}
+
+/* Sizes */
+
+.progress--sm
+  .progress__track {
+  height: 0.5rem;
+}
+
+.progress--md
+  .progress__track {
+  height: 0.75rem;
+}
+
+.progress--lg
+  .progress__track {
+  height: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress__fill {
+    transition: none;
+  }
+}

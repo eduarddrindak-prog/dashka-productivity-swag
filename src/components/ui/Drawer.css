@@ -1,0 +1,289 @@
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  pointer-events: none;
+}
+
+.drawer__overlay {
+  position: absolute;
+  inset: 0;
+
+  background: var(--color-overlay);
+
+  opacity: 1;
+  pointer-events: auto;
+
+  backdrop-filter: blur(2px);
+}
+
+.drawer__panel {
+  position: absolute;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  box-shadow: var(--shadow-elevated);
+
+  pointer-events: auto;
+
+  overflow: hidden;
+
+  outline: none;
+}
+
+/* Sides */
+
+.drawer--right .drawer__panel {
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  width: min(100%, 32rem);
+}
+
+.drawer--left .drawer__panel {
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  width: min(100%, 32rem);
+}
+
+.drawer--top .drawer__panel {
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: min(100%, 32rem);
+}
+
+.drawer--bottom .drawer__panel {
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: min(100%, 32rem);
+}
+
+/* Sizes */
+
+.drawer__panel--sm {
+  max-width: 24rem;
+  max-height: 24rem;
+}
+
+.drawer__panel--md {
+  max-width: 32rem;
+  max-height: 32rem;
+}
+
+.drawer__panel--lg {
+  max-width: 48rem;
+  max-height: 48rem;
+}
+
+.drawer__panel--full {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Header */
+
+.drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+
+  padding: var(--space-5);
+
+  border-bottom: 1px solid var(--color-border);
+
+  flex-shrink: 0;
+}
+
+.drawer__heading {
+  min-width: 0;
+}
+
+.drawer__title {
+  margin: 0;
+
+  color: var(--color-text);
+
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--line-tight);
+}
+
+.drawer__description {
+  margin: var(--space-2) 0 0;
+
+  color: var(--color-text-muted);
+
+  font-size: var(--text-sm);
+  line-height: var(--line-normal);
+}
+
+.drawer__close {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: var(--control-size);
+  height: var(--control-size);
+
+  padding: 0;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+
+  background: transparent;
+  color: var(--color-text);
+
+  cursor: pointer;
+
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.drawer__close:hover {
+  background: var(--color-surface-raised);
+  border-color: var(--color-border-strong);
+}
+
+.drawer__close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-shadow);
+}
+
+/* Body */
+
+.drawer__body {
+  flex: 1 1 auto;
+
+  min-height: 0;
+
+  padding: var(--space-5);
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+}
+
+/* Motion */
+
+@media (prefers-reduced-motion: no-preference) {
+  .drawer__overlay {
+    animation:
+      drawer-overlay-enter
+      var(--duration-base)
+      var(--ease-standard);
+  }
+
+  .drawer--right .drawer__panel {
+    animation:
+      drawer-right-enter
+      var(--duration-base)
+      var(--ease-standard);
+  }
+
+  .drawer--left .drawer__panel {
+    animation:
+      drawer-left-enter
+      var(--duration-base)
+      var(--ease-standard);
+  }
+
+  .drawer--top .drawer__panel {
+    animation:
+      drawer-top-enter
+      var(--duration-base)
+      var(--ease-standard);
+  }
+
+  .drawer--bottom .drawer__panel {
+    animation:
+      drawer-bottom-enter
+      var(--duration-base)
+      var(--ease-standard);
+  }
+}
+
+@keyframes drawer-overlay-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawer-right-enter {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-left-enter {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-top-enter {
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-bottom-enter {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 760px) {
+  .drawer--left .drawer__panel,
+  .drawer--right .drawer__panel {
+    width: min(100%, 24rem);
+  }
+
+  .drawer__header,
+  .drawer__body {
+    padding: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer__overlay,
+  .drawer__panel {
+    animation: none;
+  }
+}

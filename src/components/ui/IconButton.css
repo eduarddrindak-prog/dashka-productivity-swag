@@ -1,0 +1,131 @@
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+
+  cursor: pointer;
+
+  outline: none;
+
+  transition:
+    background var(--duration-fast)
+      var(--ease-standard),
+    border-color var(--duration-fast)
+      var(--ease-standard),
+    color var(--duration-fast)
+      var(--ease-standard),
+    transform var(--duration-fast)
+      var(--ease-standard);
+}
+
+.icon-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.icon-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.icon-button:focus-visible {
+  outline:
+    var(--focus-ring-width)
+    solid
+    var(--focus-ring-color);
+
+  outline-offset:
+    var(--focus-ring-offset);
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+/* Sizes */
+
+.icon-button--sm {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon-button--md {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.icon-button--lg {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Variants */
+
+.icon-button--primary {
+  background: var(--color-text);
+  color: var(--color-text-inverse);
+  border-color: var(--color-text);
+}
+
+.icon-button--primary:hover:not(:disabled) {
+  background: var(--color-text-soft);
+  border-color: var(--color-text-soft);
+}
+
+.icon-button--secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.icon-button--secondary:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  border-color: var(--color-text);
+}
+
+.icon-button--ghost {
+  background: transparent;
+  color: var(--color-text-soft);
+  border-color: transparent;
+}
+
+.icon-button--ghost:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.icon-button--danger {
+  background: var(--color-danger);
+  color: var(--color-white);
+  border-color: var(--color-danger);
+}
+
+.icon-button--danger:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+/* Icon */
+
+.icon-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-button {
+    transition: none;
+  }
+
+  .icon-button:hover:not(:disabled),
+  .icon-button:active:not(:disabled) {
+    transform: none;
+  }
+}

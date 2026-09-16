@@ -1,0 +1,139 @@
+.alert {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: var(--space-4);
+  width: 100%;
+
+  padding: var(--space-4);
+
+  border: 1px solid;
+  border-radius: var(--radius-lg);
+
+  line-height: var(--line-normal);
+}
+
+.alert__content {
+  display: flex;
+  align-items: flex-start;
+
+  min-width: 0;
+  gap: var(--space-3);
+}
+
+.alert__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  margin-top: 0.125rem;
+}
+
+.alert__body {
+  min-width: 0;
+}
+
+.alert__title {
+  margin-bottom: var(--space-1);
+
+  font-weight: var(--font-semibold);
+  line-height: var(--line-snug);
+}
+
+.alert__message {
+  color: var(--color-text-soft);
+}
+
+.alert__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  width: 2rem;
+  height: 2rem;
+
+  margin: -0.25rem -0.25rem 0 0;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: currentColor;
+
+  cursor: pointer;
+
+  transition:
+    background var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard);
+}
+
+.alert__close:hover {
+  background: color-mix(
+    in srgb,
+    currentColor 8%,
+    transparent
+  );
+}
+
+.alert__close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-shadow);
+}
+
+/* Variants */
+
+.alert--info {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-soft-strong);
+}
+
+.alert--success {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+  border-color: color-mix(
+    in srgb,
+    var(--color-success) 24%,
+    transparent
+  );
+}
+
+.alert--warning {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+  border-color: color-mix(
+    in srgb,
+    var(--color-warning) 24%,
+    transparent
+  );
+}
+
+.alert--danger {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-color: color-mix(
+    in srgb,
+    var(--color-danger) 24%,
+    transparent
+  );
+}
+
+.alert--info .alert__message,
+.alert--success .alert__message,
+.alert--warning .alert__message,
+.alert--danger .alert__message {
+  color: var(--color-text-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alert__close {
+    transition: none;
+  }
+}

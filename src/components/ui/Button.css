@@ -1,0 +1,113 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: fit-content;
+  border: 1px solid;
+  border-radius: var(--button-radius);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-normal);
+  cursor: pointer;
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard),
+    background var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.button svg {
+  flex: 0 0 auto;
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.button:hover:not(:disabled) svg:last-child {
+  transform: translateX(3px);
+}
+
+.button--sm {
+  min-height: var(--button-height-sm);
+  padding: var(--button-padding-sm);
+  font-size: var(--button-font-size-sm);
+}
+
+.button--md {
+  min-height: var(--button-height-md);
+  padding: var(--button-padding-md);
+  font-size: var(--button-font-size-md);
+}
+
+.button--lg {
+  min-height: var(--button-height-lg);
+  padding: var(--button-padding-lg);
+  font-size: var(--button-font-size-lg);
+}
+
+.button--primary {
+  color: var(--button-primary-text);
+  background: var(--button-primary-bg);
+  border-color: var(--button-primary-border);
+  box-shadow: var(--shadow-accent);
+}
+
+.button--secondary {
+  color: var(--button-secondary-text);
+  background: var(--button-secondary-bg);
+  border-color: var(--button-secondary-border);
+}
+
+.button--secondary:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+}
+
+.button--ghost {
+  color: var(--button-ghost-text);
+  background: var(--button-ghost-bg);
+  border-color: var(--button-ghost-border);
+}
+
+.button--ghost:hover:not(:disabled) {
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.button--success {
+  color: var(--color-text-inverse);
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.button--success:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.button--danger {
+  color: var(--color-white);
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.button--danger:hover:not(:disabled) {
+  opacity: 0.9;
+}

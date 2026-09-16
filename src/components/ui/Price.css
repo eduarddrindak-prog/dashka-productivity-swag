@@ -1,0 +1,66 @@
+.price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25em;
+
+  color: var(--color-text);
+
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.price__currency {
+  color: var(--color-text-soft);
+
+  font-size: var(--price-currency-size);
+  font-weight: var(--font-regular);
+}
+
+.price__amount {
+  color: inherit;
+
+  font-size: var(--price-amount-size);
+  font-weight: var(--font-semibold);
+
+  line-height: 1;
+}
+
+.price__period {
+  color: var(--color-text-soft);
+
+  font-size: var(--price-currency-size);
+  font-weight: var(--font-regular);
+}
+
+/* Sizes */
+
+.price--sm .price__currency,
+.price--sm .price__period {
+  font-size: var(--text-xs);
+}
+
+.price--sm .price__amount {
+  font-size: var(--text-lg);
+}
+
+.price--md .price__currency,
+.price--md .price__period {
+  font-size: var(--text-sm);
+}
+
+.price--md .price__amount {
+  font-size: var(--price-amount-size);
+}
+
+.price--lg .price__currency,
+.price--lg .price__period {
+  font-size: var(--text-base);
+}
+
+.price--lg .price__amount {
+  font-size: clamp(
+    2rem,
+    5vw,
+    3rem
+  );
+}

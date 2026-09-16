@@ -1,0 +1,130 @@
+.header {
+  position: relative;
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-page) 86%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.header--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4.5rem;
+  gap: var(--space-4);
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+}
+
+.header__logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.header__logo {
+  color: var(--color-text);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.header__nav-list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.header__nav-item {
+  display: flex;
+}
+
+.header__link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.header__menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.header__menu-toggle:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (max-width: 760px) {
+  .header__inner {
+    position: relative;
+    min-height: 4rem;
+  }
+
+  .header__nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    display: none;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-page);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .header__nav--open {
+    display: block;
+  }
+
+  .header__nav-list {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header__actions {
+    margin-left: auto;
+  }
+
+  .header__menu-toggle {
+    display: inline-flex;
+  }
+
+  .header__actions > a,
+  .header__actions > button {
+    display: none;
+  }
+}

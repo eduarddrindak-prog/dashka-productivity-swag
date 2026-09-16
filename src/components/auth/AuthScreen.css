@@ -1,0 +1,273 @@
+.auth-screen {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  background: #070908;
+
+  color: #eef2ef;
+}
+
+.auth-screen__glow {
+  position: absolute;
+
+  width: 520px;
+  height: 520px;
+
+  border-radius: 50%;
+
+  background: rgba(91, 228, 63, 0.045);
+
+  filter: blur(100px);
+
+  pointer-events: none;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+
+  width: min(390px, calc(100vw - 40px));
+
+  box-sizing: border-box;
+
+  padding: 32px;
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 18px;
+
+  background: rgba(11, 14, 13, 0.94);
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.55),
+    0 0 50px rgba(91, 228, 63, 0.025);
+
+  backdrop-filter: blur(18px);
+}
+
+.auth-card__brand {
+  display: flex;
+  align-items: baseline;
+
+  gap: 5px;
+
+  margin-bottom: 38px;
+
+  font-size: 0.9rem;
+  font-weight: 550;
+}
+
+.auth-card__brand span {
+  color: #eef2ef;
+}
+
+.auth-card__brand strong {
+  color: #5be43f;
+
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.auth-card__header {
+  margin-bottom: 24px;
+}
+
+.auth-card__header h1 {
+  margin: 0 0 7px;
+
+  color: #eef2ef;
+
+  font-size: 1.45rem;
+  font-weight: 550;
+  letter-spacing: -0.035em;
+}
+
+.auth-card__header p {
+  margin: 0;
+
+  color: #626b66;
+
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.auth-field span {
+  color: #8b948f;
+
+  font-size: 0.68rem;
+  font-weight: 450;
+}
+
+.auth-field input {
+  width: 100%;
+  height: 42px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  color: #e1e7e3;
+
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 400;
+
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.auth-field input::placeholder {
+  color: #505954;
+}
+
+.auth-field input:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.auth-field input:focus {
+  border-color: rgba(91, 228, 63, 0.42);
+
+  background: rgba(255, 255, 255, 0.045);
+
+  box-shadow:
+    0 0 0 3px rgba(91, 228, 63, 0.055);
+}
+
+.auth-error {
+  padding: 9px 11px;
+
+  border: 1px solid rgba(255, 80, 80, 0.14);
+  border-radius: 8px;
+
+  background: rgba(255, 80, 80, 0.055);
+
+  color: #dc7b7b;
+
+  font-size: 0.67rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.auth-submit {
+  width: 100%;
+  height: 42px;
+
+  margin-top: 3px;
+
+  border: 1px solid rgba(91, 228, 63, 0.2);
+  border-radius: 9px;
+
+  background: rgba(91, 228, 63, 0.1);
+
+  color: #5be43f;
+
+  font-family: inherit;
+  font-size: 0.73rem;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.auth-submit:hover:not(:disabled) {
+  border-color: rgba(91, 228, 63, 0.35);
+
+  background: rgba(91, 228, 63, 0.15);
+
+  transform: translateY(-1px);
+}
+
+.auth-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.auth-submit:disabled {
+  opacity: 0.5;
+
+  cursor: default;
+}
+
+.auth-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  font-size: 0.66rem;
+}
+
+.auth-switch span {
+  color: #555e59;
+}
+
+.auth-switch button {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #5be43f;
+
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 450;
+
+  cursor: pointer;
+}
+
+.auth-switch button:hover {
+  color: #70ed56;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    width: calc(100vw - 28px);
+
+    padding: 25px 21px;
+  }
+
+  .auth-card__brand {
+    margin-bottom: 30px;
+  }
+}

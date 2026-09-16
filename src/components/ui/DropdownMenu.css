@@ -1,0 +1,152 @@
+.dropdown-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu__content {
+  position: absolute;
+  z-index: 50;
+
+  top: calc(100% + var(--space-2));
+
+  min-width: 12rem;
+  max-width: min(
+    20rem,
+    calc(100vw - 1.5rem)
+  );
+
+  padding: var(--space-2);
+
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-soft);
+
+  transform-origin: top left;
+
+  animation:
+    dropdown-menu-enter
+    var(--duration-fast)
+    var(--ease-standard);
+}
+
+.dropdown-menu__content--start {
+  left: 0;
+}
+
+.dropdown-menu__content--center {
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: top center;
+
+  animation-name:
+    dropdown-menu-enter-center;
+}
+
+.dropdown-menu__content--end {
+  right: 0;
+  transform-origin: top right;
+}
+
+.dropdown-menu__item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+
+  min-height: 2.5rem;
+
+  padding: var(--space-2) var(--space-3);
+
+  border: 0;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: var(--color-text);
+
+  font: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background var(--duration-fast)
+      var(--ease-standard),
+    color var(--duration-fast)
+      var(--ease-standard);
+}
+
+.dropdown-menu__item:hover:not(:disabled),
+.dropdown-menu__item:focus-visible {
+  background: var(--color-accent-soft);
+  outline: none;
+}
+
+.dropdown-menu__item:focus-visible {
+  box-shadow: var(--focus-ring-shadow);
+}
+
+.dropdown-menu__item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dropdown-menu__item--destructive {
+  color: var(--color-danger);
+}
+
+.dropdown-menu__item--destructive:hover:not(:disabled),
+.dropdown-menu__item--destructive:focus-visible {
+  background: var(--color-danger-soft);
+}
+
+.dropdown-menu__separator {
+  height: 1px;
+
+  margin: var(--space-2) 0;
+
+  background: var(--color-border);
+}
+
+@keyframes dropdown-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0)
+      scale(1);
+  }
+}
+
+@keyframes dropdown-menu-enter-center {
+  from {
+    opacity: 0;
+    transform:
+      translate(-50%, -4px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translate(-50%, 0)
+      scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-menu__content {
+    min-width: 10rem;
+    max-width: calc(100vw - 1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-menu__content {
+    animation: none;
+  }
+}

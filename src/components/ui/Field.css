@@ -1,0 +1,134 @@
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.field[data-disabled="true"] {
+  opacity: 0.7;
+}
+
+.field[data-disabled="true"] .field__label {
+  cursor: not-allowed;
+}
+
+.field__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.field__label {
+  display: block;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.field__required {
+  color: var(--color-danger);
+  font-weight: var(--font-semibold);
+}
+
+.field__control {
+  width: 100%;
+}
+
+.field__control > input,
+.field__control > textarea,
+.field__control > button {
+  width: 100%;
+}
+
+.field__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.field__error {
+  display: block;
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+  line-height: var(--line-normal);
+  font-weight: var(--font-medium);
+}
+
+.field__success {
+  display: block;
+  color: var(--color-success);
+  font-size: var(--text-xs);
+  line-height: var(--line-normal);
+  font-weight: var(--font-medium);
+}
+
+.field__hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--line-normal);
+}
+
+/* Form control states */
+.field-control {
+  width: 100%;
+  min-height: var(--field-height);
+  padding: 0 var(--space-4);
+  color: var(--field-text);
+  border: 1px solid var(--field-border);
+  border-radius: var(--field-radius);
+  background: var(--field-bg);
+  outline: none;
+  transition:
+    border-color var(--duration-base) var(--ease-standard),
+    background var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.field-control::placeholder {
+  color: var(--field-placeholder);
+}
+
+.field-control:hover:not(:disabled):not([aria-invalid="true"]) {
+  border-color: var(--field-border-focus);
+}
+
+.field-control:focus-visible {
+  border-color: var(--field-border-focus);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.field-control:disabled {
+  background: var(--field-bg-disabled);
+  border-color: var(--field-border-disabled);
+  color: var(--field-text-disabled);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.field-control[aria-invalid="true"]:not(:disabled) {
+  background: var(--field-bg-error);
+  border-color: var(--field-border-error);
+}
+
+.field-control[aria-invalid="true"]:focus-visible {
+  border-color: var(--field-border-error-focus);
+  box-shadow: 0 0 0 3px var(--color-danger-soft);
+}
+
+.field[data-success="true"] .field-control {
+  background: var(--field-bg-success);
+  border-color: var(--field-border-success);
+}
+
+.field[data-success="true"] .field-control:focus-visible {
+  border-color: var(--field-border-success);
+  box-shadow: 0 0 0 3px var(--color-success-soft);
+}
+
+.field-control--textarea {
+  min-height: 8rem;
+  padding-top: var(--space-3);
+  resize: vertical;
+}
+

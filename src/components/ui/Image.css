@@ -1,0 +1,34 @@
+.image {
+  display: block;
+
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+
+  aspect-ratio: var(--image-aspect-ratio, auto);
+
+  object-fit: var(--image-fit, cover);
+  object-position: var(--image-position, center);
+}
+
+/* Radius */
+
+.image--radius-none {
+  border-radius: 0;
+}
+
+.image--radius-sm {
+  border-radius: var(--radius-md);
+}
+
+.image--radius-md {
+  border-radius: var(--radius-lg);
+}
+
+.image--radius-lg {
+  border-radius: var(--radius-xl, var(--radius-lg));
+}
+
+.image--radius-full {
+  border-radius: var(--radius-full);
+}

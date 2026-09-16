@@ -1,0 +1,234 @@
+html,
+body,
+#root {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.dashka-app {
+  min-height: 100vh;
+  padding: 1.25rem;
+}
+
+.dashka-shell {
+  width: min(100%, 112rem);
+  margin: 0 auto;
+}
+
+.dashka-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  min-height: 4.5rem;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.45rem 0.55rem 0.45rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(12, 15, 14, 0.86);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.dashka-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.dashka-brand__name {
+  color: var(--color-text);
+  font-size: clamp(1.25rem, 1.1rem + 0.4vw, 1.6rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.dashka-brand__accent {
+  color: var(--color-accent);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.dashka-week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.dashka-week-button {
+  display: inline-flex;
+  min-width: 13rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.dashka-week-button:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+.dashka-week-button svg {
+  color: var(--color-accent);
+}
+
+.dashka-header-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dashka-calendar-section {
+  min-width: 0;
+}
+
+.dashka-bottom-menu {
+  display: flex;
+  align-items: stretch;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(12, 15, 14, 0.86);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.dashka-bottom-menu > .button {
+  flex: 0 0 auto;
+  min-width: 12.5rem;
+}
+
+.dashka-menu-item {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.dashka-menu-item:hover,
+.dashka-menu-item--active {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+.dashka-menu-item__icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 2.35rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-accent);
+}
+
+.dashka-menu-item span:last-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dashka-menu-item strong {
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashka-menu-item small {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .dashka-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .dashka-week-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .dashka-brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .dashka-header-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .dashka-bottom-menu {
+    flex-wrap: wrap;
+  }
+
+  .dashka-bottom-menu > .button {
+    width: 100%;
+  }
+
+  .dashka-menu-item {
+    flex: 1 1 calc(50% - 0.65rem);
+  }
+}
+
+@media (max-width: 560px) {
+  .dashka-app {
+    padding: 0.6rem;
+  }
+
+  .dashka-header {
+    padding-left: 0.8rem;
+  }
+
+  .dashka-week-button {
+    min-width: 10rem;
+    font-size: 0.8rem;
+  }
+
+  .dashka-menu-item {
+    flex-basis: 100%;
+  }
+}

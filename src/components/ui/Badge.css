@@ -1,0 +1,121 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+  max-width: 100%;
+
+  padding: var(--badge-padding);
+
+  border: 1px solid;
+  border-radius: var(--badge-radius);
+
+  font-size: var(--badge-font-size);
+  font-weight: var(--font-semibold);
+  line-height: 1;
+  letter-spacing: var(--tracking-label);
+
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Filled */
+
+.badge--filled.badge--accent {
+  color: var(--badge-text);
+  background: var(--badge-bg);
+  border-color: var(--badge-border);
+}
+
+.badge--filled.badge--neutral {
+  color: var(--color-text-soft);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.badge--filled.badge--success {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+  border-color: color-mix(
+    in srgb,
+    var(--color-success) 24%,
+    transparent
+  );
+}
+
+.badge--filled.badge--danger {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-color: color-mix(
+    in srgb,
+    var(--color-danger) 24%,
+    transparent
+  );
+}
+
+/* Outlined */
+
+.badge--outlined {
+  background: transparent;
+  border-width: 1.5px;
+}
+
+.badge--outlined.badge--accent {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.badge--outlined.badge--neutral {
+  color: var(--color-text-soft);
+  border-color: var(--color-border-strong);
+}
+
+.badge--outlined.badge--success {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.badge--outlined.badge--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* Subtle */
+
+.badge--subtle {
+  background: var(--color-surface);
+  border-color: transparent;
+}
+
+.badge--subtle.badge--accent {
+  color: var(--color-accent);
+}
+
+.badge--subtle.badge--neutral {
+  color: var(--color-text-soft);
+}
+
+.badge--subtle.badge--success {
+  color: var(--color-success);
+}
+
+.badge--subtle.badge--danger {
+  color: var(--color-danger);
+}
+
+/* Sizes */
+
+.badge--sm {
+  min-height: 1.35rem;
+  padding: 0.125rem 0.5rem;
+
+  font-size: 0.65rem;
+}
+
+.badge--md {
+  min-height: 1.75rem;
+  padding: var(--badge-padding);
+
+  font-size: var(--badge-font-size);
+}

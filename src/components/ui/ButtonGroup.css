@@ -1,0 +1,34 @@
+.button-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.button-group--attached {
+  gap: 0;
+}
+
+.button-group--attached > * {
+  border-radius: 0;
+}
+
+.button-group--attached > *:first-child {
+  border-top-left-radius: var(--button-radius);
+  border-bottom-left-radius: var(--button-radius);
+}
+
+.button-group--attached > *:last-child {
+  border-top-right-radius: var(--button-radius);
+  border-bottom-right-radius: var(--button-radius);
+}
+
+/* Keep borders visually connected */
+
+.button-group--attached > * + * {
+  margin-left: -1px;
+}
+
+.button-group--attached > *:focus-visible {
+  position: relative;
+  z-index: 1;
+}
