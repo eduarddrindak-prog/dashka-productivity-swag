@@ -575,10 +575,10 @@ useEffect(() => {
 if (!currentUser) {
   return (
     <AuthScreen
-      onAuthenticated={(user) => {
-        setCurrentUser(user);
-      }}
-    />
+  onAuthenticated={(user) => {
+    setCurrentUser(user);
+  }}
+/>
   );
 }
 
