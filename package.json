@@ -15,9 +15,12 @@
     "vite": "^6.0.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.0.0",
+    "@cloudflare/vite-plugin": "^1.55.0",
+    "@cloudflare/workers-types": "^5.20260917.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.7.0"
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.134.0"
   }
 }

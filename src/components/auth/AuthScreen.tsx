@@ -12,9 +12,8 @@ interface AuthScreenProps {
 export function AuthScreen({
   onAuthenticated,
 }: AuthScreenProps) {
-  const [mode, setMode] = useState<"login" | "register">(
-    "login",
-  );
+  const [mode, setMode] =
+    useState<"login" | "register">("login");
 
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
@@ -22,9 +21,7 @@ export function AuthScreen({
     useState("");
 
   const [error, setError] = useState("");
-
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   const isRegister = mode === "register";
 
@@ -32,34 +29,32 @@ export function AuthScreen({
     nextMode: "login" | "register",
   ) => {
     setMode(nextMode);
-
     setLogin("");
     setPassword("");
     setPasswordRepeat("");
     setError("");
   };
 
-  const handleSubmit = (
-  event: FormEvent<HTMLFormElement>,
-) => {
-  event.preventDefault();
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
 
-  setError("");
+    setError("");
 
-  if (
-    isRegister &&
-    password !== passwordRepeat
-  ) {
-    setError("Пароли не совпадают.");
-    return;
-  }
+    if (
+      isRegister &&
+      password !== passwordRepeat
+    ) {
+      setError("Пароли не совпадают.");
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  window.setTimeout(() => {
     const result = isRegister
-      ? registerUser(login, password)
-      : loginUser(login, password);
+      ? await registerUser(login, password)
+      : await loginUser(login, password);
 
     if (!result.success) {
       setError(result.error);
@@ -68,8 +63,7 @@ export function AuthScreen({
     }
 
     onAuthenticated();
-  }, 180);
-};
+  };
 
   return (
     <main className="auth-screen">
@@ -90,7 +84,7 @@ export function AuthScreen({
 
           <p>
             {isRegister
-              ? "Создай локальный аккаунт для своего расписания."
+              ? "Создай аккаунт для своего расписания."
               : "Войди, чтобы открыть своё расписание."}
           </p>
         </div>
@@ -107,7 +101,8 @@ export function AuthScreen({
               value={login}
               autoComplete="username"
               placeholder="Введите логин"
-              maxLength={30}
+              maxLength={50}
+              disabled={loading}
               onChange={(event) => {
                 setLogin(event.target.value);
                 setError("");
@@ -128,6 +123,7 @@ export function AuthScreen({
               }
               placeholder="Введите пароль"
               maxLength={100}
+              disabled={loading}
               onChange={(event) => {
                 setPassword(event.target.value);
                 setError("");
@@ -145,6 +141,7 @@ export function AuthScreen({
                 autoComplete="new-password"
                 placeholder="Повторите пароль"
                 maxLength={100}
+                disabled={loading}
                 onChange={(event) => {
                   setPasswordRepeat(
                     event.target.value,
@@ -183,6 +180,7 @@ export function AuthScreen({
 
           <button
             type="button"
+            disabled={loading}
             onClick={() =>
               switchMode(
                 isRegister

@@ -56,9 +56,32 @@ interface ModalState {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(
-    () => getCurrentUser(),
-  );
+  const [currentUser, setCurrentUser] = useState<
+  Awaited<ReturnType<typeof getCurrentUser>> | null
+>(null);
+
+const [authLoading, setAuthLoading] = useState(true);
+
+useEffect(() => {
+  let cancelled = false;
+
+  const checkAuth = async () => {
+    const user = await getCurrentUser();
+
+    if (cancelled) {
+      return;
+    }
+
+    setCurrentUser(user);
+    setAuthLoading(false);
+  };
+
+  checkAuth();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   const [selectedWeek, setSelectedWeek] = useState(() =>
     startOfWeek(new Date()),
@@ -545,11 +568,16 @@ function App() {
     });
   };
 
-  if (!currentUser) {
+  if (authLoading) {
+  return null;
+}
+
+if (!currentUser) {
   return (
     <AuthScreen
-      onAuthenticated={() => {
-        setCurrentUser(getCurrentUser());
+      onAuthenticated={async () => {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
       }}
     />
   );

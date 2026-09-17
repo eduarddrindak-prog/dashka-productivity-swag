@@ -69,7 +69,8 @@ function getTouchDistance(
     first.clientY;
 
   return Math.sqrt(
-    dx * dx + dy * dy,
+    dx * dx +
+    dy * dy,
   );
 }
 
@@ -126,7 +127,7 @@ function formatTime(
 
 function taskColorClass(
   color: Task["color"],
-) {
+): string {
   return `task-block--${color}`;
 }
 
@@ -180,6 +181,30 @@ export function WeekCalendar({
     >(null);
 
   /*
+   * После touch-double-tap браузер
+   * может дополнительно отправить click.
+   * Этот ref позволяет его поглотить.
+   */
+
+  const suppressNextClickRef =
+    useRef(false);
+
+  /*
+   * =========================================================
+   * MOBILE DOUBLE TAP
+   * =========================================================
+   */
+
+  const lastTaskTouchRef =
+    useRef<{
+      taskId: string;
+      instanceId: string;
+      time: number;
+      x: number;
+      y: number;
+    } | null>(null);
+
+  /*
    * =========================================================
    * DAYS
    * =========================================================
@@ -194,14 +219,9 @@ export function WeekCalendar({
   );
 
   /*
-   * Высота одного часа
-   * с учётом текущего zoom.
-   *
-   * Например:
-   *
-   * zoom 1   = 68px
-   * zoom 1.5 = 102px
-   * zoom 2   = 136px
+   * =========================================================
+   * HOUR HEIGHT
+   * =========================================================
    */
 
   const zoomedHourHeight =
@@ -263,29 +283,17 @@ export function WeekCalendar({
       return;
     }
 
-    /*
-     * Если пальцы раздвигаются —
-     * zoom увеличивается.
-     *
-     * Если пальцы сжимаются —
-     * zoom уменьшается.
-     */
-
     const scale =
       currentDistance /
       pinchStartDistanceRef.current;
 
-    const nextZoom = clamp(
-      pinchStartZoomRef.current *
-        scale,
-      MIN_CALENDAR_ZOOM,
-      MAX_CALENDAR_ZOOM,
-    );
-
-    /*
-     * Отключаем стандартный
-     * browser pinch внутри календаря.
-     */
+    const nextZoom =
+      clamp(
+        pinchStartZoomRef.current *
+          scale,
+        MIN_CALENDAR_ZOOM,
+        MAX_CALENDAR_ZOOM,
+      );
 
     event.preventDefault();
 
@@ -297,11 +305,6 @@ export function WeekCalendar({
   const handleTouchEnd = (
     event: TouchEvent<HTMLDivElement>,
   ) => {
-    /*
-     * Пока остаётся две точки —
-     * pinch ещё продолжается.
-     */
-
     if (
       event.touches.length ===
       2
@@ -448,6 +451,21 @@ export function WeekCalendar({
   const handleTaskClick = (
     instanceId: string,
   ) => {
+    /*
+     * После mobile double-tap
+     * следующий synthetic click
+     * ничего не должен делать.
+     */
+
+    if (
+      suppressNextClickRef.current
+    ) {
+      suppressNextClickRef.current =
+        false;
+
+      return;
+    }
+
     if (
       clickTimerRef.current
     ) {
@@ -469,7 +487,7 @@ export function WeekCalendar({
 
   /*
    * =========================================================
-   * DOUBLE CLICK
+   * DESKTOP DOUBLE CLICK
    * =========================================================
    */
 
@@ -496,6 +514,98 @@ export function WeekCalendar({
 
   /*
    * =========================================================
+   * MOBILE DOUBLE TAP
+   * =========================================================
+   */
+
+  const handleTaskTouchEnd = (
+    event: TouchEvent<HTMLButtonElement>,
+    taskId: string,
+    instanceId: string,
+  ) => {
+    if (
+      event.changedTouches.length !==
+      1
+    ) {
+      return;
+    }
+
+    const touch =
+      event.changedTouches[0];
+
+    if (!touch) {
+      return;
+    }
+
+    const currentTime =
+      Date.now();
+
+    const previous =
+      lastTaskTouchRef.current;
+
+    const distance =
+      previous
+        ? Math.hypot(
+            touch.clientX -
+              previous.x,
+            touch.clientY -
+              previous.y,
+          )
+        : Infinity;
+
+    const isDoubleTap =
+      Boolean(
+        previous &&
+          previous.taskId ===
+            taskId &&
+          previous.instanceId ===
+            instanceId &&
+          currentTime -
+            previous.time <=
+            320 &&
+          distance <= 36,
+      );
+
+    if (
+      isDoubleTap
+    ) {
+      if (
+        clickTimerRef.current
+      ) {
+        clearTimeout(
+          clickTimerRef.current,
+        );
+
+        clickTimerRef.current =
+          null;
+      }
+
+      suppressNextClickRef.current =
+        true;
+
+      lastTaskTouchRef.current =
+        null;
+
+      onEditTask(
+        taskId,
+        instanceId,
+      );
+
+      return;
+    }
+
+    lastTaskTouchRef.current =
+      {
+        taskId,
+        instanceId,
+        time: currentTime,
+        x: touch.clientX,
+        y: touch.clientY,
+      };
+  };
+
+  /*
+   * =========================================================
    * CALENDAR STYLE
    * =========================================================
    */
@@ -514,7 +624,6 @@ export function WeekCalendar({
 
   return (
     <div className="week-calendar">
-
       <div
         className="week-calendar__scroll"
         ref={scrollRef}
@@ -532,13 +641,11 @@ export function WeekCalendar({
           handleTouchEnd
         }
       >
-
         {/* =====================================================
             DAYS HEADER
             ===================================================== */}
 
         <div className="week-calendar__days">
-
           <div className="week-calendar__time-header" />
 
           {days.map(
@@ -581,7 +688,6 @@ export function WeekCalendar({
               </button>
             ),
           )}
-
         </div>
 
         {/* =====================================================
@@ -596,13 +702,11 @@ export function WeekCalendar({
               zoomedHourHeight,
           }}
         >
-
           {/* ===================================================
               TIME COLUMN
               =================================================== */}
 
           <div className="week-calendar__time-column">
-
             {hours.map(
               (hour) => (
                 <div
@@ -623,7 +727,6 @@ export function WeekCalendar({
                 </div>
               ),
             )}
-
           </div>
 
           {/* ===================================================
@@ -631,7 +734,6 @@ export function WeekCalendar({
               =================================================== */}
 
           <div className="week-calendar__columns">
-
             {days.map(
               (
                 day,
@@ -687,10 +789,7 @@ export function WeekCalendar({
                     }}
                     aria-label={`Добавить задачу на ${DAY_NAMES_LONG[index]}`}
                   >
-
-                    {/* =========================================
-                        HOUR LINES
-                        ========================================= */}
+                    {/* HOUR LINES */}
 
                     {hours
                       .slice(
@@ -714,9 +813,7 @@ export function WeekCalendar({
                         ),
                       )}
 
-                    {/* =========================================
-                        TASKS
-                        ========================================= */}
+                    {/* TASKS */}
 
                     {instances.map(
                       (
@@ -744,7 +841,8 @@ export function WeekCalendar({
                           );
 
                         const top =
-                          (start / 60) *
+                          (start /
+                            60) *
                           zoomedHourHeight;
 
                         const height =
@@ -794,9 +892,19 @@ export function WeekCalendar({
                                 instance.id,
                               );
                             }}
+                            onTouchEnd={(
+                              event,
+                            ) => {
+                              event.stopPropagation();
+
+                              handleTaskTouchEnd(
+                                event,
+                                task.id,
+                                instance.id,
+                              );
+                            }}
                             title="Клик — выполнить. Двойной клик — редактировать."
                           >
-
                             <span className="task-block__status" />
 
                             <span className="task-block__time">
@@ -822,20 +930,16 @@ export function WeekCalendar({
                                 }
                               </span>
                             )}
-
                           </button>
                         );
                       },
                     )}
-
                   </div>
                 );
               },
             )}
 
-            {/* =================================================
-                CURRENT TIME LINE
-                ================================================= */}
+            {/* CURRENT TIME LINE */}
 
             {(() => {
               const currentDayIndex =
@@ -868,7 +972,6 @@ export function WeekCalendar({
                 />
               );
             })()}
-
           </div>
         </div>
       </div>

@@ -1,70 +1,44 @@
 export interface AuthUser {
   id: string;
   login: string;
-  password: string;
+  role: "user" | "admin";
   createdAt: string;
 }
 
-const USERS_KEY = "dashka-productivity-users";
-const CURRENT_USER_KEY = "dashka-productivity-current-user";
-
-function createId(): string {
-  return `${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2, 9)}`;
+interface AuthResponse {
+  user?: AuthUser;
+  error?: string;
 }
 
-function getUsers(): AuthUser[] {
+const API_BASE = "";
+
+export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
-    const raw = localStorage.getItem(USERS_KEY);
-
-    if (!raw) {
-      return [];
-    }
-
-    const users = JSON.parse(raw);
-
-    if (!Array.isArray(users)) {
-      return [];
-    }
-
-    return users;
-  } catch {
-    return [];
-  }
-}
-
-function saveUsers(users: AuthUser[]) {
-  localStorage.setItem(
-    USERS_KEY,
-    JSON.stringify(users),
-  );
-}
-
-export function getCurrentUser(): AuthUser | null {
-  try {
-    const userId = localStorage.getItem(
-      CURRENT_USER_KEY,
+    const response = await fetch(
+      `${API_BASE}/api/auth/me`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
     );
 
-    if (!userId) {
+    if (!response.ok) {
       return null;
     }
 
-    const user = getUsers().find(
-      (item) => item.id === userId,
-    );
+    const data =
+      (await response.json()) as AuthResponse;
 
-    return user ?? null;
+    return data.user ?? null;
   } catch {
     return null;
   }
 }
 
-export function registerUser(
+export async function registerUser(
   login: string,
   password: string,
-):
+): Promise<
   | {
       success: true;
       user: AuthUser;
@@ -72,7 +46,8 @@ export function registerUser(
   | {
       success: false;
       error: string;
-    } {
+    }
+> {
   const normalizedLogin = login.trim();
 
   if (!normalizedLogin) {
@@ -85,7 +60,8 @@ export function registerUser(
   if (normalizedLogin.length < 3) {
     return {
       success: false,
-      error: "Логин должен содержать минимум 3 символа.",
+      error:
+        "Логин должен содержать минимум 3 символа.",
     };
   }
 
@@ -96,55 +72,59 @@ export function registerUser(
     };
   }
 
-  if (password.length < 4) {
+  if (password.length < 8) {
     return {
       success: false,
-      error: "Пароль должен содержать минимум 4 символа.",
+      error:
+        "Пароль должен содержать минимум 8 символов.",
     };
   }
 
-  const users = getUsers();
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/auth/register`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          login: normalizedLogin,
+          password,
+        }),
+      },
+    );
 
-  const alreadyExists = users.some(
-    (user) =>
-      user.login.toLowerCase() ===
-      normalizedLogin.toLowerCase(),
-  );
+    const data =
+      (await response.json()) as AuthResponse;
 
-  if (alreadyExists) {
+    if (!response.ok || !data.user) {
+      return {
+        success: false,
+        error:
+          data.error ??
+          "Не удалось создать аккаунт.",
+      };
+    }
+
+    return {
+      success: true,
+      user: data.user,
+    };
+  } catch {
     return {
       success: false,
-      error: "Такой логин уже существует.",
+      error:
+        "Не удалось подключиться к серверу.",
     };
   }
-
-  const user: AuthUser = {
-    id: createId(),
-    login: normalizedLogin,
-    password,
-    createdAt: new Date().toISOString(),
-  };
-
-  saveUsers([
-    ...users,
-    user,
-  ]);
-
-  localStorage.setItem(
-    CURRENT_USER_KEY,
-    user.id,
-  );
-
-  return {
-    success: true,
-    user,
-  };
 }
 
-export function loginUser(
+export async function loginUser(
   login: string,
   password: string,
-):
+): Promise<
   | {
       success: true;
       user: AuthUser;
@@ -152,42 +132,77 @@ export function loginUser(
   | {
       success: false;
       error: string;
-    } {
+    }
+> {
   const normalizedLogin = login.trim();
 
-  const user = getUsers().find(
-    (item) =>
-      item.login.toLowerCase() ===
-      normalizedLogin.toLowerCase(),
-  );
-
-  if (!user) {
+  if (!normalizedLogin) {
     return {
       success: false,
-      error: "Неверный логин или пароль.",
+      error: "Введите логин.",
     };
   }
 
-  if (user.password !== password) {
+  if (!password) {
     return {
       success: false,
-      error: "Неверный логин или пароль.",
+      error: "Введите пароль.",
     };
   }
 
-  localStorage.setItem(
-    CURRENT_USER_KEY,
-    user.id,
-  );
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/auth/login`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          login: normalizedLogin,
+          password,
+        }),
+      },
+    );
 
-  return {
-    success: true,
-    user,
-  };
+    const data =
+      (await response.json()) as AuthResponse;
+
+    if (!response.ok || !data.user) {
+      return {
+        success: false,
+        error:
+          data.error ??
+          "Неверный логин или пароль.",
+      };
+    }
+
+    return {
+      success: true,
+      user: data.user,
+    };
+  } catch {
+    return {
+      success: false,
+      error:
+        "Не удалось подключиться к серверу.",
+    };
+  }
 }
 
-export function logoutUser() {
-  localStorage.removeItem(
-    CURRENT_USER_KEY,
-  );
+export async function logoutUser(): Promise<void> {
+  try {
+    await fetch(
+      `${API_BASE}/api/auth/logout`,
+      {
+        method: "POST",
+        credentials: "include",
+      },
+    );
+  } catch {
+    // Даже если запрос завершился ошибкой,
+    // локальное состояние приложения всё равно
+    // будет сброшено через App.tsx.
+  }
 }
