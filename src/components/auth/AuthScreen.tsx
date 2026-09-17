@@ -39,6 +39,9 @@ export function AuthScreen({
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
+
+    console.log("🔥 HANDLE SUBMIT WORKS");
+    
     event.preventDefault();
 
     setError("");
