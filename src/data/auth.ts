@@ -10,7 +10,8 @@ interface AuthResponse {
   error?: string;
 }
 
-const API_BASE = "";
+const API_BASE =
+  "https://dashka-productivity.eduarddrindak.workers.dev";
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
