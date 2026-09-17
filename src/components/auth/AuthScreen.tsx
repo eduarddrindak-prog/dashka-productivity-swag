@@ -3,10 +3,11 @@ import {
   loginUser,
   registerUser,
 } from "../../data/auth";
+import type { AuthUser } from "../../data/auth";
 import "./AuthScreen.css";
 
 interface AuthScreenProps {
-  onAuthenticated: () => void;
+  onAuthenticated: (user: AuthUser) => void;
 }
 
 export function AuthScreen({
@@ -62,7 +63,7 @@ export function AuthScreen({
       return;
     }
 
-    onAuthenticated();
+    onAuthenticated(result.user);
   };
 
   return (

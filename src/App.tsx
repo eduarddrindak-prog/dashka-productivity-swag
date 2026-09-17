@@ -575,8 +575,7 @@ useEffect(() => {
 if (!currentUser) {
   return (
     <AuthScreen
-      onAuthenticated={async () => {
-        const user = await getCurrentUser();
+      onAuthenticated={(user) => {
         setCurrentUser(user);
       }}
     />
