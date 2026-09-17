@@ -20,7 +20,11 @@ import type {
   TaskInstance,
 } from "./data/types";
 
-import { loadAppData, saveAppData } from "./data/storage";
+import {
+  loadAppData,
+  loadRemoteAppData,
+  saveAppData,
+} from "./data/storage";
 
 import {
   createId,
@@ -87,9 +91,11 @@ useEffect(() => {
     startOfWeek(new Date()),
   );
 
-  const [data, setData] = useState<AppData>(
-    () => loadAppData(),
-  );
+  const [data, setData] = useState<AppData>({
+    categories: [],
+    tasks: [],
+    taskInstances: [],
+  });
 
   const [weekPickerOpen, setWeekPickerOpen] =
     useState(false);
@@ -108,8 +114,42 @@ useEffect(() => {
    */
 
   useEffect(() => {
-    setData(loadAppData());
+    if (!currentUser) {
+      setData({
+        categories: [],
+        tasks: [],
+        taskInstances: [],
+      });
+      return;
+    }
+
+    const userId = currentUser.id;
+    let cancelled = false;
+
+    setData(loadAppData(userId));
+
+    const loadRemote = async () => {
+      const remoteData = await loadRemoteAppData(userId);
+
+      if (!cancelled && remoteData) {
+        setData(remoteData);
+      }
+    };
+
+    void loadRemote();
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentUser?.id]);
+
+  const persistData = (next: AppData) => {
+    if (!currentUser) {
+      return;
+    }
+
+    void saveAppData(next, currentUser.id);
+  };
 
   const weekData = useMemo(() => {
     return ensureRecurringInstances(
@@ -124,7 +164,7 @@ useEffect(() => {
       data.taskInstances.length
     ) {
       setData(weekData);
-      saveAppData(weekData);
+      persistData(weekData);
     }
   }, [
     weekData,
@@ -223,7 +263,7 @@ useEffect(() => {
         categories: [...current.categories, category],
       };
 
-      saveAppData(next);
+      persistData(next);
 
       return next;
     });
@@ -245,7 +285,7 @@ useEffect(() => {
         ),
       };
 
-      saveAppData(next);
+      persistData(next);
 
       return next;
     });
@@ -270,7 +310,7 @@ useEffect(() => {
         ),
       };
 
-      saveAppData(next);
+      persistData(next);
 
       return next;
     });
@@ -414,7 +454,7 @@ useEffect(() => {
         }
       }
 
-      saveAppData(next);
+      persistData(next);
 
       return next;
     });
@@ -450,7 +490,7 @@ useEffect(() => {
         ),
       };
 
-      saveAppData(next);
+      persistData(next);
 
       return next;
     });
@@ -480,7 +520,7 @@ useEffect(() => {
         ),
       };
 
-      saveAppData(next);
+      persistData(next);
 
       return next;
     });

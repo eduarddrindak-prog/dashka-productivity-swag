@@ -30,13 +30,52 @@ interface CurrentSession {
 const SESSION_COOKIE = "dashka_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30;
 
-function json(data: unknown, status = 200, headers: HeadersInit = {}): Response {
+function corsHeaders(request: Request): Headers {
+  const origin = request.headers.get("Origin");
+
+  const headers = new Headers();
+
+  if (
+    origin === "http://localhost:5173" ||
+    origin === "https://dashka-productivity.pages.dev"
+  ) {
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Access-Control-Allow-Credentials", "true");
+    headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, X-Admin-Setup-Secret",
+    );
+    headers.set("Vary", "Origin");
+  }
+
+  return headers;
+}
+
+function json(
+  data: unknown,
+  status = 200,
+  headers: HeadersInit = {},
+  request?: Request,
+): Response {
+  const responseHeaders = new Headers(headers);
+
+  if (request) {
+    const cors = corsHeaders(request);
+
+    cors.forEach((value, key) => {
+      responseHeaders.set(key, value);
+    });
+  }
+
+  responseHeaders.set(
+    "Content-Type",
+    "application/json; charset=utf-8",
+  );
+
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      ...headers,
-    },
+    headers: responseHeaders,
   });
 }
 
@@ -185,7 +224,7 @@ function sessionCookie(token: string, request: Request): string {
     `${SESSION_COOKIE}=${encodeURIComponent(token)}`,
     "HttpOnly",
     ...(url.protocol === "https:" ? ["Secure"] : []),
-    "SameSite=Lax",
+    "SameSite=None",
     "Path=/",
     `Max-Age=${SESSION_DURATION_SECONDS}`,
   ].join("; ");
@@ -198,7 +237,7 @@ function clearSessionCookie(request: Request): string {
     `${SESSION_COOKIE}=`,
     "HttpOnly",
     ...(url.protocol === "https:" ? ["Secure"] : []),
-    "SameSite=Lax",
+    "SameSite=None",
     "Path=/",
     "Max-Age=0",
   ].join("; ");
@@ -825,6 +864,461 @@ async function handleStopImpersonation(
   );
 }
 
+
+interface DataCategoryInput {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+interface DataTaskInput {
+  id: string;
+  name: string;
+  description: string;
+  categoryId: string;
+  color: string;
+  type: string;
+  recurrence?: unknown;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface DataTaskInstanceInput {
+  id: string;
+  taskId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AppDataPayload {
+  categories?: unknown;
+  tasks?: unknown;
+  taskInstances?: unknown;
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+async function handleGetData(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const current = await getCurrentSession(request, env);
+
+  if (!current) {
+    return json({ error: "Требуется авторизация." }, 401);
+  }
+
+  const [categoriesResult, tasksResult, instancesResult] =
+    await Promise.all([
+      env.DB.prepare(
+        `
+          SELECT id, name, created_at
+          FROM categories
+          WHERE user_id = ?
+          ORDER BY datetime(created_at) ASC
+        `,
+      )
+        .bind(current.user.id)
+        .all<{
+          id: string;
+          name: string;
+          created_at: string;
+        }>(),
+
+      env.DB.prepare(
+        `
+          SELECT
+            id,
+            name,
+            description,
+            category_id,
+            color,
+            type,
+            recurrence_json,
+            created_at,
+            updated_at
+          FROM tasks
+          WHERE user_id = ?
+          ORDER BY datetime(created_at) ASC
+        `,
+      )
+        .bind(current.user.id)
+        .all<{
+          id: string;
+          name: string;
+          description: string;
+          category_id: string;
+          color: string;
+          type: string;
+          recurrence_json: string | null;
+          created_at: string;
+          updated_at: string;
+        }>(),
+
+      env.DB.prepare(
+        `
+          SELECT
+            id,
+            task_id,
+            date,
+            start_time,
+            end_time,
+            status,
+            created_at,
+            updated_at
+          FROM task_instances
+          WHERE user_id = ?
+          ORDER BY date ASC, start_time ASC
+        `,
+      )
+        .bind(current.user.id)
+        .all<{
+          id: string;
+          task_id: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        }>(),
+    ]);
+
+  return json({
+    categories: categoriesResult.results.map((category) => ({
+      id: category.id,
+      name: category.name,
+      createdAt: category.created_at,
+    })),
+
+    tasks: tasksResult.results.map((task) => ({
+      id: task.id,
+      name: task.name,
+      description: task.description,
+      categoryId: task.category_id,
+      color: task.color,
+      type: task.type,
+      ...(task.recurrence_json
+        ? { recurrence: JSON.parse(task.recurrence_json) }
+        : {}),
+      createdAt: task.created_at,
+      updatedAt: task.updated_at,
+    })),
+
+    taskInstances: instancesResult.results.map((instance) => ({
+      id: instance.id,
+      taskId: instance.task_id,
+      date: instance.date,
+      startTime: instance.start_time,
+      endTime: instance.end_time,
+      status: instance.status,
+      createdAt: instance.created_at,
+      updatedAt: instance.updated_at,
+    })),
+  });
+}
+
+async function handlePutData(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const current = await getCurrentSession(request, env);
+
+  if (!current) {
+    return json({ error: "Требуется авторизация." }, 401);
+  }
+
+  let body: AppDataPayload;
+
+  try {
+    body = (await request.json()) as AppDataPayload;
+  } catch {
+    return json({ error: "Некорректный JSON." }, 400);
+  }
+
+  if (
+    !Array.isArray(body.categories) ||
+    !Array.isArray(body.tasks) ||
+    !Array.isArray(body.taskInstances)
+  ) {
+    return json({ error: "Некорректный формат данных." }, 400);
+  }
+
+  const categories = body.categories as DataCategoryInput[];
+  const tasks = body.tasks as DataTaskInput[];
+  const taskInstances =
+    body.taskInstances as DataTaskInstanceInput[];
+
+  if (
+    categories.some(
+      (category) =>
+        !isString(category.id) ||
+        !isString(category.name) ||
+        !isString(category.createdAt),
+    )
+  ) {
+    return json({ error: "Некорректные данные категорий." }, 400);
+  }
+
+  if (
+    tasks.some(
+      (task) =>
+        !isString(task.id) ||
+        !isString(task.name) ||
+        !isString(task.description) ||
+        !isString(task.categoryId) ||
+        !isString(task.color) ||
+        !isString(task.type) ||
+        !isString(task.createdAt) ||
+        !isString(task.updatedAt),
+    )
+  ) {
+    return json({ error: "Некорректные данные задач." }, 400);
+  }
+
+  if (
+    taskInstances.some(
+      (instance) =>
+        !isString(instance.id) ||
+        !isString(instance.taskId) ||
+        !isString(instance.date) ||
+        !isString(instance.startTime) ||
+        !isString(instance.endTime) ||
+        !isString(instance.status) ||
+        !isString(instance.createdAt) ||
+        !isString(instance.updatedAt),
+    )
+  ) {
+    return json(
+      { error: "Некорректные данные экземпляров задач." },
+      400,
+    );
+  }
+
+  const userId = current.user.id;
+
+  /*
+   * A task needs a real category because tasks.category_id is a
+   * foreign key. If the client has an orphaned task with an empty
+   * categoryId, keep that task by creating a normal fallback category.
+   */
+  const normalizedCategories = [...categories];
+  const hasOrphanedTasks = tasks.some(
+    (task) => !task.categoryId.trim(),
+  );
+
+  if (hasOrphanedTasks) {
+    const fallbackId = createId();
+
+    normalizedCategories.push({
+      id: fallbackId,
+      name: "Без категории",
+      createdAt: new Date().toISOString(),
+    });
+
+    for (const task of tasks) {
+      if (!task.categoryId.trim()) {
+        task.categoryId = fallbackId;
+      }
+    }
+  }
+
+  const categoryIds = new Set(
+    normalizedCategories.map((category) => category.id),
+  );
+
+  const taskIds = new Set(
+    tasks.map((task) => task.id),
+  );
+
+  if (
+    new Set(normalizedCategories.map((category) => category.id))
+      .size !== normalizedCategories.length
+  ) {
+    return json({ error: "Обнаружены дублирующиеся категории." }, 400);
+  }
+
+  if (new Set(tasks.map((task) => task.id)).size !== tasks.length) {
+    return json({ error: "Обнаружены дублирующиеся задачи." }, 400);
+  }
+
+  if (
+    new Set(taskInstances.map((instance) => instance.id)).size !==
+    taskInstances.length
+  ) {
+    return json(
+      { error: "Обнаружены дублирующиеся экземпляры задач." },
+      400,
+    );
+  }
+
+  if (
+    tasks.some(
+      (task) =>
+        !categoryIds.has(task.categoryId) ||
+        !["single", "recurring"].includes(task.type),
+    )
+  ) {
+    return json(
+      { error: "Задача содержит недопустимую категорию или тип." },
+      400,
+    );
+  }
+
+  if (
+    taskInstances.some(
+      (instance) =>
+        !taskIds.has(instance.taskId) ||
+        !["todo", "completed"].includes(instance.status),
+    )
+  ) {
+    return json(
+      { error: "Экземпляр задачи содержит недопустимые данные." },
+      400,
+    );
+  }
+
+  /*
+   * Replace the current user's data.
+   * Delete children first because of the foreign-key constraints.
+   */
+  await env.DB.prepare(
+    "DELETE FROM task_instances WHERE user_id = ?",
+  )
+    .bind(userId)
+    .run();
+
+  await env.DB.prepare(
+    "DELETE FROM tasks WHERE user_id = ?",
+  )
+    .bind(userId)
+    .run();
+
+  await env.DB.prepare(
+    "DELETE FROM categories WHERE user_id = ?",
+  )
+    .bind(userId)
+    .run();
+
+  /*
+   * D1 batches have a finite statement limit, so insert in small
+   * chunks. Each chunk is atomic.
+   */
+  const runInChunks = async (
+    statements: D1PreparedStatement[],
+  ) => {
+    const chunkSize = 50;
+
+    for (let i = 0; i < statements.length; i += chunkSize) {
+      await env.DB.batch(
+        statements.slice(i, i + chunkSize),
+      );
+    }
+  };
+
+  await runInChunks(
+    normalizedCategories.map((category) =>
+      env.DB.prepare(
+        `
+          INSERT INTO categories (
+            id,
+            user_id,
+            name,
+            created_at
+          )
+          VALUES (?, ?, ?, ?)
+        `,
+      ).bind(
+        category.id,
+        userId,
+        category.name.trim(),
+        category.createdAt,
+      ),
+    ),
+  );
+
+  await runInChunks(
+    tasks.map((task) =>
+      env.DB.prepare(
+        `
+          INSERT INTO tasks (
+            id,
+            user_id,
+            name,
+            description,
+            category_id,
+            color,
+            type,
+            recurrence_json,
+            created_at,
+            updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      ).bind(
+        task.id,
+        userId,
+        task.name.trim(),
+        task.description,
+        task.categoryId,
+        task.color,
+        task.type,
+        task.recurrence === undefined
+          ? null
+          : JSON.stringify(task.recurrence),
+        task.createdAt,
+        task.updatedAt,
+      ),
+    ),
+  );
+
+  await runInChunks(
+    taskInstances.map((instance) =>
+      env.DB.prepare(
+        `
+          INSERT INTO task_instances (
+            id,
+            task_id,
+            user_id,
+            date,
+            start_time,
+            end_time,
+            status,
+            created_at,
+            updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      ).bind(
+        instance.id,
+        instance.taskId,
+        userId,
+        instance.date,
+        instance.startTime,
+        instance.endTime,
+        instance.status,
+        instance.createdAt,
+        instance.updatedAt,
+      ),
+    ),
+  );
+
+  return json({
+    success: true,
+    data: {
+      categories: normalizedCategories,
+      tasks,
+      taskInstances,
+    },
+  });
+}
+
 async function handleAdminSetup(
   request: Request,
   env: Env,
@@ -942,63 +1436,95 @@ export default {
   ): Promise<Response> {
     const url = new URL(request.url);
 
-    if (
-      request.method === "OPTIONS"
-    ) {
-      return new Response(null, { status: 204 });
+    const addCors = (response: Response): Response => {
+      const headers = new Headers(response.headers);
+      const cors = corsHeaders(request);
+
+      cors.forEach((value, key) => {
+        headers.set(key, value);
+      });
+
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(request),
+      });
     }
 
     if (
-  request.method === "POST" &&
-  url.pathname === "/api/admin/setup"
-) {
-  return handleAdminSetup(request, env);
-}
+      request.method === "GET" &&
+      url.pathname === "/api/data"
+    ) {
+      return addCors(await handleGetData(request, env));
+    }
+
+    if (
+      request.method === "PUT" &&
+      url.pathname === "/api/data"
+    ) {
+      return addCors(await handlePutData(request, env));
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/api/admin/setup"
+    ) {
+      return addCors(await handleAdminSetup(request, env));
+    }
 
     if (
       request.method === "GET" &&
       url.pathname === "/api/health"
     ) {
-      return json({
-        ok: true,
-        database: !!env.DB,
-        service: "dashka-productivity-api",
-      });
+      return addCors(
+        json({
+          ok: true,
+          database: !!env.DB,
+          service: "dashka-productivity-api",
+        }),
+      );
     }
 
     if (
       request.method === "POST" &&
       url.pathname === "/api/auth/register"
     ) {
-      return handleRegister(request, env);
+      return addCors(await handleRegister(request, env));
     }
 
     if (
       request.method === "POST" &&
       url.pathname === "/api/auth/login"
     ) {
-      return handleLogin(request, env);
+      return addCors(await handleLogin(request, env));
     }
 
     if (
       request.method === "GET" &&
       url.pathname === "/api/auth/me"
     ) {
-      return handleMe(request, env);
+      return addCors(await handleMe(request, env));
     }
 
     if (
       request.method === "POST" &&
       url.pathname === "/api/auth/logout"
     ) {
-      return handleLogout(request, env);
+      return addCors(await handleLogout(request, env));
     }
 
     if (
       request.method === "GET" &&
       url.pathname === "/api/admin/users"
     ) {
-      return handleAdminUsers(request, env);
+      return addCors(await handleAdminUsers(request, env));
     }
 
     const deleteMatch = url.pathname.match(
@@ -1009,10 +1535,12 @@ export default {
       request.method === "DELETE" &&
       deleteMatch
     ) {
-      return handleAdminDeleteUser(
-        request,
-        env,
-        decodeURIComponent(deleteMatch[1]),
+      return addCors(
+        await handleAdminDeleteUser(
+          request,
+          env,
+          decodeURIComponent(deleteMatch[1]),
+        ),
       );
     }
 
@@ -1024,10 +1552,12 @@ export default {
       request.method === "POST" &&
       impersonateMatch
     ) {
-      return handleAdminImpersonate(
-        request,
-        env,
-        decodeURIComponent(impersonateMatch[1]),
+      return addCors(
+        await handleAdminImpersonate(
+          request,
+          env,
+          decodeURIComponent(impersonateMatch[1]),
+        ),
       );
     }
 
@@ -1035,14 +1565,16 @@ export default {
       request.method === "POST" &&
       url.pathname === "/api/admin/stop-impersonation"
     ) {
-      return handleStopImpersonation(request, env);
+      return addCors(await handleStopImpersonation(request, env));
     }
 
-    return new Response("Not found", {
-      status: 404,
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-      },
-    });
+    return addCors(
+      new Response("Not found", {
+        status: 404,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      }),
+    );
   },
 } satisfies ExportedHandler<Env>;
