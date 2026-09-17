@@ -1,5 +1,4 @@
 import type { AppData } from "./types";
-import { getCurrentUser } from "./auth";
 
 const DEFAULT_DATA: AppData = {
   categories: [],
@@ -7,33 +6,21 @@ const DEFAULT_DATA: AppData = {
   taskInstances: [],
 };
 
-function getStorageKey(): string | null {
-  const user = getCurrentUser();
-
-  if (!user) {
-    return null;
-  }
-
-  return `dashka-productivity-data-${user.id}`;
+function getStorageKey(): string {
+  return "dashka-productivity-data";
 }
 
 export function loadAppData(): AppData {
   const key = getStorageKey();
-
-  if (!key) {
-    return {
-      categories: [],
-      tasks: [],
-      taskInstances: [],
-    };
-  }
 
   try {
     const raw = localStorage.getItem(key);
 
     if (!raw) {
       return {
-        ...DEFAULT_DATA,
+        categories: [],
+        tasks: [],
+        taskInstances: [],
       };
     }
 
@@ -43,11 +30,9 @@ export function loadAppData(): AppData {
       categories: Array.isArray(parsed.categories)
         ? parsed.categories
         : [],
-
       tasks: Array.isArray(parsed.tasks)
         ? parsed.tasks
         : [],
-
       taskInstances: Array.isArray(
         parsed.taskInstances,
       )
@@ -56,17 +41,15 @@ export function loadAppData(): AppData {
     };
   } catch {
     return {
-      ...DEFAULT_DATA,
+      categories: [],
+      tasks: [],
+      taskInstances: [],
     };
   }
 }
 
 export function saveAppData(data: AppData) {
   const key = getStorageKey();
-
-  if (!key) {
-    return;
-  }
 
   localStorage.setItem(
     key,
@@ -76,10 +59,6 @@ export function saveAppData(data: AppData) {
 
 export function clearAppData() {
   const key = getStorageKey();
-
-  if (!key) {
-    return;
-  }
 
   localStorage.removeItem(key);
 }
