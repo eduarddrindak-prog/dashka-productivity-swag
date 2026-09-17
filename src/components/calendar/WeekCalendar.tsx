@@ -1,4 +1,15 @@
-import { useEffect, useMemo, useRef } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import type {
+  CSSProperties,
+  TouchEvent,
+  TouchList,
+} from "react";
 
 import {
   DAY_NAMES_LONG,
@@ -16,9 +27,7 @@ import "./WeekCalendar.css";
 
 interface WeekCalendarProps {
   week: Date;
-
   tasks: Task[];
-
   taskInstances: TaskInstance[];
 
   onCreateAtDate: (
@@ -36,8 +45,44 @@ interface WeekCalendarProps {
 }
 
 const HOUR_HEIGHT = 68;
-
 const DAY_END = 24 * 60;
+
+const MIN_CALENDAR_ZOOM = 0.75;
+const MAX_CALENDAR_ZOOM = 2;
+
+function getTouchDistance(
+  touches: TouchList,
+): number {
+  const first = touches[0];
+  const second = touches[1];
+
+  if (!first || !second) {
+    return 0;
+  }
+
+  const dx =
+    second.clientX -
+    first.clientX;
+
+  const dy =
+    second.clientY -
+    first.clientY;
+
+  return Math.sqrt(
+    dx * dx + dy * dy,
+  );
+}
+
+function clamp(
+  value: number,
+  min: number,
+  max: number,
+): number {
+  return Math.min(
+    Math.max(value, min),
+    max,
+  );
+}
 
 function timeToMinutes(
   time: string,
@@ -93,17 +138,38 @@ export function WeekCalendar({
   onToggleTask,
   onEditTask,
 }: WeekCalendarProps) {
+  /*
+   * =========================================================
+   * CALENDAR ZOOM
+   * =========================================================
+   */
+
+  const [
+    calendarZoom,
+    setCalendarZoom,
+  ] = useState(1);
+
+  const pinchStartDistanceRef =
+    useRef<number | null>(null);
+
+  const pinchStartZoomRef =
+    useRef(1);
+
+  /*
+   * =========================================================
+   * SCROLL
+   * =========================================================
+   */
+
   const scrollRef =
-    useRef<HTMLDivElement>(
+    useRef<HTMLDivElement | null>(
       null,
     );
 
   /*
-   * Таймер используется для разделения
-   * обычного клика и двойного клика.
-   *
-   * При двойном клике первый click
-   * не успевает переключить статус.
+   * =========================================================
+   * CLICK / DOUBLE CLICK
+   * =========================================================
    */
 
   const clickTimerRef =
@@ -112,6 +178,12 @@ export function WeekCalendar({
         typeof setTimeout
       > | null
     >(null);
+
+  /*
+   * =========================================================
+   * DAYS
+   * =========================================================
+   */
 
   const days = useMemo(
     () =>
@@ -122,9 +194,129 @@ export function WeekCalendar({
   );
 
   /*
-   * При смене недели
-   * возвращаем календарь
-   * примерно к 08:00.
+   * Высота одного часа
+   * с учётом текущего zoom.
+   *
+   * Например:
+   *
+   * zoom 1   = 68px
+   * zoom 1.5 = 102px
+   * zoom 2   = 136px
+   */
+
+  const zoomedHourHeight =
+    HOUR_HEIGHT *
+    calendarZoom;
+
+  /*
+   * =========================================================
+   * PINCH ZOOM
+   * =========================================================
+   */
+
+  const handleTouchStart = (
+    event: TouchEvent<HTMLDivElement>,
+  ) => {
+    if (
+      event.touches.length !==
+      2
+    ) {
+      return;
+    }
+
+    const distance =
+      getTouchDistance(
+        event.touches,
+      );
+
+    if (distance <= 0) {
+      return;
+    }
+
+    pinchStartDistanceRef.current =
+      distance;
+
+    pinchStartZoomRef.current =
+      calendarZoom;
+  };
+
+  const handleTouchMove = (
+    event: TouchEvent<HTMLDivElement>,
+  ) => {
+    if (
+      event.touches.length !==
+        2 ||
+      pinchStartDistanceRef.current ===
+        null
+    ) {
+      return;
+    }
+
+    const currentDistance =
+      getTouchDistance(
+        event.touches,
+      );
+
+    if (
+      currentDistance <= 0
+    ) {
+      return;
+    }
+
+    /*
+     * Если пальцы раздвигаются —
+     * zoom увеличивается.
+     *
+     * Если пальцы сжимаются —
+     * zoom уменьшается.
+     */
+
+    const scale =
+      currentDistance /
+      pinchStartDistanceRef.current;
+
+    const nextZoom = clamp(
+      pinchStartZoomRef.current *
+        scale,
+      MIN_CALENDAR_ZOOM,
+      MAX_CALENDAR_ZOOM,
+    );
+
+    /*
+     * Отключаем стандартный
+     * browser pinch внутри календаря.
+     */
+
+    event.preventDefault();
+
+    setCalendarZoom(
+      nextZoom,
+    );
+  };
+
+  const handleTouchEnd = (
+    event: TouchEvent<HTMLDivElement>,
+  ) => {
+    /*
+     * Пока остаётся две точки —
+     * pinch ещё продолжается.
+     */
+
+    if (
+      event.touches.length ===
+      2
+    ) {
+      return;
+    }
+
+    pinchStartDistanceRef.current =
+      null;
+  };
+
+  /*
+   * =========================================================
+   * RESET SCROLL ON WEEK CHANGE
+   * =========================================================
    */
 
   useEffect(() => {
@@ -139,14 +331,15 @@ export function WeekCalendar({
       () => {
         element.scrollTop =
           8 *
-          HOUR_HEIGHT;
+          zoomedHourHeight;
       },
     );
   }, [week]);
 
   /*
-   * Очищаем таймер,
-   * если компонент уничтожается.
+   * =========================================================
+   * CLEANUP
+   * =========================================================
    */
 
   useEffect(() => {
@@ -161,6 +354,12 @@ export function WeekCalendar({
     };
   }, []);
 
+  /*
+   * =========================================================
+   * HOURS
+   * =========================================================
+   */
+
   const hours =
     Array.from(
       {
@@ -169,6 +368,12 @@ export function WeekCalendar({
       (_, index) =>
         index,
     );
+
+  /*
+   * =========================================================
+   * CURRENT TIME
+   * =========================================================
+   */
 
   const now =
     new Date();
@@ -179,8 +384,9 @@ export function WeekCalendar({
     now.getMinutes();
 
   /*
-   * Группируем экземпляры
-   * по датам.
+   * =========================================================
+   * INSTANCES BY DATE
+   * =========================================================
    */
 
   const instancesByDate =
@@ -191,7 +397,10 @@ export function WeekCalendar({
           TaskInstance[]
         >();
 
-      for (const instance of taskInstances) {
+      for (
+        const instance of
+        taskInstances
+      ) {
         const current =
           map.get(
             instance.date,
@@ -211,8 +420,9 @@ export function WeekCalendar({
     }, [taskInstances]);
 
   /*
-   * Быстрый поиск задачи
-   * по taskId.
+   * =========================================================
+   * TASK MAP
+   * =========================================================
    */
 
   const taskMap =
@@ -238,12 +448,6 @@ export function WeekCalendar({
   const handleTaskClick = (
     instanceId: string,
   ) => {
-    /*
-     * Если предыдущий click
-     * ещё ожидает проверки —
-     * отменяем его.
-     */
-
     if (
       clickTimerRef.current
     ) {
@@ -251,16 +455,6 @@ export function WeekCalendar({
         clickTimerRef.current,
       );
     }
-
-    /*
-     * Ждём немного.
-     *
-     * Если второго click нет —
-     * это обычный click.
-     *
-     * Если будет double-click —
-     * timer будет отменён.
-     */
 
     clickTimerRef.current =
       setTimeout(() => {
@@ -279,112 +473,133 @@ export function WeekCalendar({
    * =========================================================
    */
 
-  const handleTaskDoubleClick =
-    (
-      taskId: string,
-      instanceId: string,
-    ) => {
-      /*
-       * Самое важное:
-       *
-       * отменяем ожидающий
-       * одиночный click.
-       *
-       * Поэтому статус
-       * НЕ переключится.
-       */
-
-      if (
-        clickTimerRef.current
-      ) {
-        clearTimeout(
-          clickTimerRef.current,
-        );
-
-        clickTimerRef.current =
-          null;
-      }
-
-      onEditTask(
-        taskId,
-        instanceId,
+  const handleTaskDoubleClick = (
+    taskId: string,
+    instanceId: string,
+  ) => {
+    if (
+      clickTimerRef.current
+    ) {
+      clearTimeout(
+        clickTimerRef.current,
       );
-    };
+
+      clickTimerRef.current =
+        null;
+    }
+
+    onEditTask(
+      taskId,
+      instanceId,
+    );
+  };
+
+  /*
+   * =========================================================
+   * CALENDAR STYLE
+   * =========================================================
+   */
+
+  const calendarStyle =
+    {
+      "--calendar-zoom":
+        calendarZoom,
+    } as CSSProperties;
+
+  /*
+   * =========================================================
+   * RENDER
+   * =========================================================
+   */
 
   return (
     <div className="week-calendar">
 
-      {/* =====================================================
-          DAYS HEADER
-          ===================================================== */}
-
-      <div className="week-calendar__days">
-
-        <div className="week-calendar__time-header" />
-
-        {days.map(
-          (
-            day,
-            index,
-          ) => (
-            <button
-              type="button"
-              className={`week-calendar__day-header ${
-                isToday(
-                  day.date,
-                )
-                  ? "week-calendar__day-header--today"
-                  : ""
-              }`}
-              key={
-                day.dateKey
-              }
-              onClick={() =>
-                onCreateAtDate(
-                  day.dateKey,
-                )
-              }
-              title={`Создать задачу: ${DAY_NAMES_LONG[index]}`}
-            >
-              <span>
-                {
-                  DAY_NAMES_SHORT[
-                    index
-                  ]
-                }
-              </span>
-
-              <strong>
-                {
-                  day.date.getDate()
-                }
-              </strong>
-            </button>
-          ),
-        )}
-      </div>
-
-      {/* =====================================================
-          SCROLL AREA
-          ===================================================== */}
-
       <div
         className="week-calendar__scroll"
         ref={scrollRef}
+        style={calendarStyle}
+        onTouchStart={
+          handleTouchStart
+        }
+        onTouchMove={
+          handleTouchMove
+        }
+        onTouchEnd={
+          handleTouchEnd
+        }
+        onTouchCancel={
+          handleTouchEnd
+        }
       >
+
+        {/* =====================================================
+            DAYS HEADER
+            ===================================================== */}
+
+        <div className="week-calendar__days">
+
+          <div className="week-calendar__time-header" />
+
+          {days.map(
+            (
+              day,
+              index,
+            ) => (
+              <button
+                type="button"
+                className={`week-calendar__day-header ${
+                  isToday(
+                    day.date,
+                  )
+                    ? "week-calendar__day-header--today"
+                    : ""
+                }`}
+                key={
+                  day.dateKey
+                }
+                onClick={() =>
+                  onCreateAtDate(
+                    day.dateKey,
+                  )
+                }
+                title={`Создать задачу: ${DAY_NAMES_LONG[index]}`}
+              >
+                <span>
+                  {
+                    DAY_NAMES_SHORT[
+                      index
+                    ]
+                  }
+                </span>
+
+                <strong>
+                  {
+                    day.date.getDate()
+                  }
+                </strong>
+              </button>
+            ),
+          )}
+
+        </div>
+
+        {/* =====================================================
+            CALENDAR GRID
+            ===================================================== */}
+
         <div
           className="week-calendar__grid"
           style={{
             height:
-              (DAY_END /
-                60) *
-              HOUR_HEIGHT,
+              (DAY_END / 60) *
+              zoomedHourHeight,
           }}
         >
 
-          {/* =================================================
+          {/* ===================================================
               TIME COLUMN
-              ================================================= */}
+              =================================================== */}
 
           <div className="week-calendar__time-column">
 
@@ -394,11 +609,9 @@ export function WeekCalendar({
                   className="week-calendar__time-label"
                   style={{
                     height:
-                      HOUR_HEIGHT,
+                      zoomedHourHeight,
                   }}
-                  key={
-                    hour
-                  }
+                  key={hour}
                 >
                   {String(
                     hour,
@@ -413,9 +626,9 @@ export function WeekCalendar({
 
           </div>
 
-          {/* =================================================
+          {/* ===================================================
               DAYS
-              ================================================= */}
+              =================================================== */}
 
           <div className="week-calendar__columns">
 
@@ -475,7 +688,9 @@ export function WeekCalendar({
                     aria-label={`Добавить задачу на ${DAY_NAMES_LONG[index]}`}
                   >
 
-                    {/* Часовые линии */}
+                    {/* =========================================
+                        HOUR LINES
+                        ========================================= */}
 
                     {hours
                       .slice(
@@ -490,7 +705,7 @@ export function WeekCalendar({
                             className="week-calendar__hour-line"
                             style={{
                               height:
-                                HOUR_HEIGHT,
+                                zoomedHourHeight,
                             }}
                             key={
                               hour
@@ -499,9 +714,9 @@ export function WeekCalendar({
                         ),
                       )}
 
-                    {/* =================================================
+                    {/* =========================================
                         TASKS
-                        ================================================= */}
+                        ========================================= */}
 
                     {instances.map(
                       (
@@ -529,17 +744,17 @@ export function WeekCalendar({
                           );
 
                         const top =
-                          (start /
-                            60) *
-                          HOUR_HEIGHT;
+                          (start / 60) *
+                          zoomedHourHeight;
 
                         const height =
                           Math.max(
                             ((end -
                               start) /
                               60) *
-                              HOUR_HEIGHT,
-                            42,
+                              zoomedHourHeight,
+                            42 *
+                              calendarZoom,
                           );
 
                         return (
@@ -647,7 +862,7 @@ export function WeekCalendar({
                     top:
                       (todayMinutes /
                         60) *
-                      HOUR_HEIGHT,
+                      zoomedHourHeight,
                   }}
                   aria-hidden="true"
                 />
