@@ -7,6 +7,8 @@ import {
   Settings,
 } from "lucide-react";
 
+import { AdminPanel } from "./components/admin/AdminPanel";
+
 import { Button, IconButton } from "./components/ui";
 import { WeekCalendar } from "./components/calendar/WeekCalendar";
 import { TaskModal } from "./components/tasks/TaskModal";
@@ -103,6 +105,9 @@ useEffect(() => {
   const [settingsOpen, setSettingsOpen] =
     useState(false);
 
+  const [adminOpen, setAdminOpen] =
+  useState(false);
+
   const [modal, setModal] = useState<ModalState>({
     open: false,
     date: formatDateKey(new Date()),
@@ -124,17 +129,25 @@ useEffect(() => {
     }
 
     const userId = currentUser.id;
-    let cancelled = false;
+let cancelled = false;
 
-    setData(loadAppData(userId));
+const loadLocal = async () => {
+  const localData = await loadAppData(userId);
 
-    const loadRemote = async () => {
-      const remoteData = await loadRemoteAppData(userId);
+  if (!cancelled) {
+    setData(localData);
+  }
+};
 
-      if (!cancelled && remoteData) {
-        setData(remoteData);
-      }
-    };
+void loadLocal();
+
+const loadRemote = async () => {
+  const remoteData = await loadRemoteAppData(userId);
+
+  if (!cancelled && remoteData) {
+    setData(remoteData);
+  }
+};
 
     void loadRemote();
 
@@ -622,6 +635,20 @@ if (!currentUser) {
   );
 }
 
+if (adminOpen && currentUser.role === "admin") {
+  return (
+    <AdminPanel
+      onBack={() => setAdminOpen(false)}
+      onImpersonated={async (user) => {
+        setCurrentUser(user);
+        setAdminOpen(false);
+
+        const userData = await loadAppData(user.id);
+        setData(userData);
+      }}
+    />
+  );
+}
   /*
    * ============================================================
    * RENDER
@@ -685,16 +712,25 @@ if (!currentUser) {
           </div>
 
           <div className="dashka-header-actions">
-            <IconButton
-              variant="ghost"
-              size="md"
-              icon={<Settings size={20} />}
-              label="Настройки"
-              onClick={() =>
-                setSettingsOpen(true)
-              }
-            />
-          </div>
+  {currentUser.role === "admin" && (
+    <Button
+      size="md"
+      onClick={() => setAdminOpen(true)}
+    >
+      Admin
+    </Button>
+  )}
+
+  <IconButton
+    variant="ghost"
+    size="md"
+    icon={<Settings size={20} />}
+    label="Настройки"
+    onClick={() =>
+      setSettingsOpen(true)
+    }
+  />
+</div>
         </header>
 
         {/* WEEK PICKER */}

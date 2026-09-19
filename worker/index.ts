@@ -37,7 +37,8 @@ function corsHeaders(request: Request): Headers {
 
   if (
     origin === "http://localhost:5173" ||
-    origin === "https://dashka-productivity.pages.dev"
+    origin === "https://dashka-productivity.pages.dev" ||
+    origin === "https://dashka-productivity-swag.eduarddrindak.workers.dev"
   ) {
     headers.set("Access-Control-Allow-Origin", origin);
     headers.set("Access-Control-Allow-Credentials", "true");
